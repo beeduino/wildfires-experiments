@@ -1,0 +1,142 @@
+---
+title: "Wild Fires in Russia 2021-09-30"
+author: "Dmitrii Sorokin"
+date: "9/30/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Description
+
+There was an idea to check wildfires in Russia in 2021 as it was reported that they cover the area of 18 millions hectares.
+
+## Install and initialize libraries
+
+```{r echo=FALSE}
+install.packages("geojsonio", dependencies = TRUE)
+install.packages("docstring")
+```
+
+```{r echo=FALSE}
+# initialize libraries
+library(geojsonio)
+library(docstring)
+library(leaflet)
+```
+
+## Function to clean data
+
+```{r echo=FALSE}
+clean_data <- function(df, keep_lat_above=49) {
+  #' Clean data frame
+  #' 
+  #' filters data to keep points with latitude above @param keep_lat_above
+  #' 
+  #' @param df - input data.frame
+  #' @param keep_lat_above - keep points with latitude above this (default: 49)
+  df$latitude <- as.numeric(df$latitude)
+  df$longitude <- as.numeric(df$longitude)
+  
+  # limit data and return
+  return(df[which (df$latitude > keep_lat_above), ])
+}
+```
+
+## Steps to get and explore data
+
+### Use EONET NASA API
+
+Initially there was an attempt to use EONET NASA API, getting data from the endpoint:
+
+-   <https://eonet.sci.gsfc.nasa.gov/api/v2.1/events>
+
+Unfortunately, only around 260 wildfires were returned despite any additional parameters. It is worth to check documentation at <https://eonet.sci.gsfc.nasa.gov/docs/v3> and try more.
+
+### Use wildfires data in geojson format
+
+The second attempt was to use <https://github.com/datadesk/nasa-wildfires> to get some data.
+
+It is a python code that could be used as a library or cli utility. When used as library it returns data in geojson format. It was further discovered that the library takes 24hour daily wildfire archive file in csv format and hardcoded to get data for USA only. It happen to use save *FIRMS* source for data file as used below and converts data from csv to geojson format. Anyway, it was helpful and easy to adjust for getting Russia-Asia archive.
+
+That way the file "wildfires_viirs_data_russia-asia-24h_2021-09-30.geojson was" created, and then used
+
+```{r}
+wildfires_df <- geojson_read("https://github.com/beeduino/wildfires-experiments/raw/main/data/wildfires_viirs_data_russia-asia-24h_2021-09-30.geojson", what="sp")
+
+```
+
+and then map unfiltered
+
+```{r echo=FALSE}
+leaflet(wildfires_df) %>%
+  addTiles() %>%
+  addCircleMarkers(radius = 2, color = "orange", stroke=FALSE, fillOpacity=0.3)
+```
+and filtered
+```{r echo=FALSE}
+leaflet(clean_data(wildfires_df)) %>%
+  addTiles() %>%
+  addCircleMarkers(radius = 2, color = "orange", stroke=FALSE, fillOpacity=0.3)
+```
+
+### Use FIRMS data in csv format
+
+The Fire Information for Resource Management System (**FIRMS**) distributes Near Real-Time (NRT) active fire data within 3 hours of satellite observation from the Moderate Resolution Imaging Spectroradiometer (MODIS) aboard the Aqua and Terra satellites, and the Visible Infrared Imaging Radiometer Suite (VIIRS) aboard S-NPP and NOAA 20 (formally known as JPSS-1).
+
+Below it takes the latest 24 hours archive for Russia_Asia region in csv format.
+
+Further, clean_data() function will be used to subset data related to Russia only (latitude above 49.0). As a result only around 1200 fire points mapped out of 6703 in a full daily archive.
+
+```{r echo=FALSE}
+wildfires_firms_df = read.csv("https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Russia_Asia_24h.csv")
+```
+
+Then plot it
+
+```{r echo=FALSE}
+leaflet(clean_data(wildfires_firms_df)) %>%
+  addTiles() %>%
+  addCircleMarkers(radius = 2, color = "red", stroke=FALSE, fillOpacity=0.2)
+   
+```
+
+### Use historical data
+
+Request to get archive with annual data was manually placed via the page <https://firms.modaps.eosdis.nasa.gov/download/create.php>
+
+It took around an hour to proceed with download the file "fire_nrt_SV-C2_224794.csv" .
+
+This archive has 1.600.000 observation points in a date range from 2021-05-01 to 2021-09-30. Plotting map from this dataset makes R-Studio to crash. It was tested on two different machines with the same results. So, more clever way is required to proceed with data as such.
+
+```{r}
+# wildfires_annual_df = read.csv("./data/fire_nrt_SV-C2_224794.csv")
+# 
+# # it has only wildfires for Russia, so cleaning is not needed 
+# leaflet(wildfires_annual_df) %>%
+#   addTiles() %>%
+#   addCircleMarkers(radius = 2, color = "orange", stroke=FALSE, fillOpacity=0.2)
+```
+
+## Further exchancements
+
+-   Mark fires as regions, so when you zoom the map they will zoom as well
+-   Try netCDF data and raster imaging
+-   Try shiny application using historical data and interactive widgets
+-   Fix the problem with visualizing full annual dataset
+
+## Conclusion
+Completing this work allowed to discover valuable information about environmental data available from satellites. Some initial results of which instruments are available and how to get and use data were acquired. It will be important to make additional steps to explore more, using this work as a basis.
+Data and code for this work is available on [github](https://github.com/beeduino/wildfires-experiments).
+
+
+## References
+
+-   [Scraping tool for scihub.copernicus.eu](https://github.com/RobBlackwell/scihub-tools)
+-   [The Fire Information for Resource Management System](https://firms.modaps.eosdis.nasa.gov/)
+-   [Visualising data in NetCDF format (youtube)](https://www.youtube.com/watch?v=XqoetylQAIY)
+-   [nasa-wildfires](https://github.com/datadesk/nasa-wildfires)
+-   [Mapping 2019–20 Australian bushfires](https://towardsdatascience.com/mapping-2019-20-australian-bushfires-4e6d9a0eed63)
+
