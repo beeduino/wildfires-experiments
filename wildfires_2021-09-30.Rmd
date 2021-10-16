@@ -13,6 +13,32 @@ knitr::opts_chunk$set(echo = TRUE)
 
 There was an idea to check wildfires in Russia in 2021 as it was reported that they cover the area of 18 millions hectares.
 
+## Install prerequisites 0
+It was required to install more system packages
+```{bash}
+sudo apt install libudunits2-dev
+sudo apt install libcurl4-openssl-dev
+sudo apt install libprotobuf-dev
+sudo apt install libpq-dev
+sudo apt install libxml2-dev
+sudo apt install libgeos-dev
+sudo apt install unixodbc-dev
+sudo apt install libfontconfig1-dev
+sudo apt install libgdal-dev
+```
+
+## Install prerequisites 1
+```{r}
+install.packages('sf', dependencies=TRUE)
+```
+
+## Install prerequisites 2
+```{r}
+install.packages(magrittr)
+install.packages('protolite', dependencies=TRUE)
+install.packages('geojson', dependencies=TRUE)
+```
+
 ## Install and initialize libraries
 
 ```{r echo=FALSE}
@@ -22,6 +48,7 @@ install.packages("docstring")
 
 ```{r echo=FALSE}
 # initialize libraries
+library(magrittr)   # to support %>% pipe operator
 library(geojsonio)
 library(docstring)
 library(leaflet)
@@ -33,15 +60,15 @@ library(leaflet)
 clean_data <- function(df, keep_lat_above=49) {
   #' Clean data frame
   #' 
-  #' filters data to keep points with latitude above @param keep_lat_above
+  #' filters data to keep points with latitude above the level in "keep_lat_above" param
   #' 
   #' @param df - input data.frame
   #' @param keep_lat_above - keep points with latitude above this (default: 49)
-  df$latitude <- as.numeric(df$latitude)
-  df$longitude <- as.numeric(df$longitude)
+  df$latitude <- base::as.numeric(df$latitude)
+  df$longitude <- base::as.numeric(df$longitude)
   
   # limit data and return
-  return(df[which (df$latitude > keep_lat_above), ])
+  return(df[base::which (df$latitude > keep_lat_above), ])
 }
 ```
 
@@ -64,22 +91,22 @@ It is a python code that could be used as a library or cli utility. When used as
 That way the file "wildfires_viirs_data_russia-asia-24h_2021-09-30.geojson was" created, and then used
 
 ```{r}
-wildfires_df <- geojson_read("https://github.com/beeduino/wildfires-experiments/raw/main/data/wildfires_viirs_data_russia-asia-24h_2021-09-30.geojson", what="sp")
-
+wildfires_viirs_russia_asia_file <- "https://github.com/beeduino/wildfires-experiments/raw/main/data/wildfires_viirs_data_russia-asia-24h_2021-09-30.geojson"
+wildfires_df <- geojsonio::geojson_read(wildfires_viirs_russia_asia_file, what="sp")
 ```
 
 and then map unfiltered
 
 ```{r echo=FALSE}
-leaflet(wildfires_df) %>%
-  addTiles() %>%
-  addCircleMarkers(radius = 2, color = "orange", stroke=FALSE, fillOpacity=0.3)
+leaflet::leaflet(wildfires_df) %>%
+  leaflet::addTiles() %>%
+  leaflet::addCircleMarkers(radius = 2, color = "orange", stroke=FALSE, fillOpacity=0.3)
 ```
-and filtered
+and filtered - it only takes points related to Russia (above 44 latitude or so)
 ```{r echo=FALSE}
-leaflet(clean_data(wildfires_df)) %>%
-  addTiles() %>%
-  addCircleMarkers(radius = 2, color = "orange", stroke=FALSE, fillOpacity=0.3)
+leaflet::leaflet(clean_data(wildfires_df, keep_lat_above=44)) %>%
+  leaflet::addTiles() %>%
+  leaflet::addCircleMarkers(radius = 2, color = "orange", stroke=FALSE, fillOpacity=0.3)
 ```
 
 ### Use FIRMS data in csv format
@@ -91,15 +118,15 @@ Below it takes the latest 24 hours archive for Russia_Asia region in csv format.
 Further, clean_data() function will be used to subset data related to Russia only (latitude above 49.0). As a result only around 1200 fire points mapped out of 6703 in a full daily archive.
 
 ```{r echo=FALSE}
-wildfires_firms_df = read.csv("https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Russia_Asia_24h.csv")
+wildfires_firms_df = utils::read.csv("https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Russia_Asia_24h.csv")
 ```
 
 Then plot it
 
 ```{r echo=FALSE}
-leaflet(clean_data(wildfires_firms_df)) %>%
-  addTiles() %>%
-  addCircleMarkers(radius = 2, color = "red", stroke=FALSE, fillOpacity=0.2)
+leaflet::leaflet(clean_data(wildfires_firms_df, keep_lat_above = 45)) %>%
+  leaflet::addTiles() %>%
+  leaflet::addCircleMarkers(radius = 2, color = "red", stroke=FALSE, fillOpacity=0.2)
    
 ```
 
