@@ -1,5 +1,5 @@
 ---
-title: "Fires in Ukraine"
+title: "Fires at War Time in Ukraine"
 author: "Dmitrii Sorokin"
 date: '2022-05-23'
 output: 
@@ -16,17 +16,10 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 ## Description
 
-The idea for this report was to use active fire data to observe war zones in Ukraine in range February, 24 - MAy, 22 in 2022. Data in csv format was requested from **FIRMS** - The Fire Information for Resource Management System. Few files were requested for the same time frame but different years - the current one and previous.
+The idea for this report was to use active fire data to observe war zones in Ukraine in range from February, 24 to May, 22 in 2022. Data in csv format was requested from **FIRMS** - The Fire Information for Resource Management System. Few files were requested for the same time frame but different years - the current one and the previous "peaceful" year.
 
 
-
-### Use FIRMS data in csv format
-  
-The Fire Information for Resource Management System (**FIRMS**) distributes Near Real-Time (NRT) active fire data within 3 hours of satellite observation from the Moderate Resolution Imaging Spectroradiom
-  
-Below it takes the latest 24 hours archive for Russia_Asia region in csv format.
-
-Further, clean_data() function will be used to subset data related to Russia only (latitude above 49.0). As a result only around 1200 fire points mapped out of 6703 in a full daily archive.
+Further, filter_data() function will be used to subset data related to Russia only (latitude above 49.0). As a result only around 1200 fire points mapped out of 6703 in a full daily archive.
 
 ### Use historical data
 
@@ -36,9 +29,10 @@ It took around an hour to proceed with download the file "fire_nrt_SV-C2_224794.
 
 This archive has 1.600.000 observation points in a date range from 2021-05-01 to 2021-09-30. Plotting map from this dataset makes R-Studio to crash. It was tested on two different machines with the same r
 
+```{r libraries, include=FALSE}
+
 ## Prerequisities
 
-```{r libraries}
 # add system packages
 # sudo apt install libgdal-dev   # needed for leaflet
 
@@ -47,27 +41,29 @@ This archive has 1.600.000 observation points in a date range from 2021-05-01 to
 # install.packages("leaflet")
 # install.packages("leafsync")
 
+# install.packages("docstring")
+
 library(dplyr)
 library(leaflet)
 library(leafsync)
 library(htmltools)  # needed for tag function
 # library(htmlwidgets)
+library(docstring)
 
-```
 
 ## Helpful functions
 
-```{r functions}
-clean_data <- function(df, frp_min=5.0) {
-  #' Clean data frame
-  #'.
-  #' filters data to keep points with latitude above the level in "keep_lat_above" param
-  #'.
-  #' @param df - input data.frame
-  #' @param keep_lat_above - keep points with latitude above this (default: 49)
-  #' 
-  #' 
-  #' 
+
+
+filter_data <- function(df, frp_min=5.0) {
+#' Filters data to keep only points with frp measurement above provided frp_min parameter
+#' 
+#' @param df - input data.frame
+#' @param frp_min - keep points with latitude above this (default: 5)
+#'  
+#' 
+#' @return df - new filtered dataframe
+  
   df$latitude <- base::as.numeric(df$latitude)
   df$longitude <- base::as.numeric(df$longitude)
   
@@ -101,12 +97,12 @@ map_fires <- function(df, label="") {
 ```{r echo=FALSE}
 # 2021 fires data from 2021-02-24 till 2021-05-22
 f_ua_2021_df = utils::read.csv("./data/ua-2021_fire_archive_SV-C2_272178.csv")
-f_ua_2021_filtered_df = clean_data(f_ua_2021_df, 30)
+f_ua_2021_filtered_df = filter_data(f_ua_2021_df, 17)
 # summary(f_ua_2021_filtered_df)
 
 # 2022 fires data from 2022-02-24 till 2022-05-22
 f_ua_2022_df = utils::read.csv("./data/ua-2022_fire_nrt_SV-C2_272179.csv")
-f_ua_2022_filtered_df = clean_data(f_ua_2022_df, 15)
+f_ua_2022_filtered_df = filter_data(f_ua_2022_df, 17)
 # summary(f_ua_2022_filtered_df)
 ```
 
