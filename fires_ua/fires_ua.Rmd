@@ -1,0 +1,204 @@
+---
+title: "Fires in Ukraine"
+author: "Dmitrii Sorokin"
+date: '2022-05-23'
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+
+---
+
+```{r setup, include=FALSE}
+# knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE) 
+```
+
+## Description
+
+The idea for this report was to use active fire data to observe war zones in Ukraine in range February, 24 - MAy, 22 in 2022. Data in csv format was requested from **FIRMS** - The Fire Information for Resource Management System. Few files were requested for the same time frame but different years - the current one and previous.
+
+
+
+### Use FIRMS data in csv format
+  
+The Fire Information for Resource Management System (**FIRMS**) distributes Near Real-Time (NRT) active fire data within 3 hours of satellite observation from the Moderate Resolution Imaging Spectroradiom
+  
+Below it takes the latest 24 hours archive for Russia_Asia region in csv format.
+
+Further, clean_data() function will be used to subset data related to Russia only (latitude above 49.0). As a result only around 1200 fire points mapped out of 6703 in a full daily archive.
+
+### Use historical data
+
+Request to get archive with annual data was manually placed via the page <https://firms.modaps.eosdis.nasa.gov/download/create.php>
+
+It took around an hour to proceed with download the file "fire_nrt_SV-C2_224794.csv" .
+
+This archive has 1.600.000 observation points in a date range from 2021-05-01 to 2021-09-30. Plotting map from this dataset makes R-Studio to crash. It was tested on two different machines with the same r
+
+## Prerequisities
+
+```{r libraries}
+# add system packages
+# sudo apt install libgdal-dev   # needed for leaflet
+
+# add R packages
+# install.packages("dplyr")   # needed for pipe function
+# install.packages("leaflet")
+# install.packages("leafsync")
+
+library(dplyr)
+library(leaflet)
+library(leafsync)
+library(htmltools)  # needed for tag function
+# library(htmlwidgets)
+
+```
+
+## Helpful functions
+
+```{r functions}
+clean_data <- function(df, frp_min=5.0) {
+  #' Clean data frame
+  #'.
+  #' filters data to keep points with latitude above the level in "keep_lat_above" param
+  #'.
+  #' @param df - input data.frame
+  #' @param keep_lat_above - keep points with latitude above this (default: 49)
+  #' 
+  #' 
+  #' 
+  df$latitude <- base::as.numeric(df$latitude)
+  df$longitude <- base::as.numeric(df$longitude)
+  
+  # limit data and return
+  # return(df[base::which (df$latitude > keep_lat_above), ])
+  return(df[base::which (df$frp > frp_min), ])
+}
+
+map_fires <- function(df, label="") {
+
+  rr <- ""
+  if (label != "") {
+     rr <- htmltools::tags$div(
+       # HTML('<a href="https://cran.r-project.org/"> <img border="0" alt="ImageTitle" src="/PathToImage/ImageR.jpeg" width="300" height="100"> </a>')
+       HTML(paste('<span><b>', label, '</b></span>'))
+     )      
+  }
+
+  leaflet::leaflet(df) %>%
+    leaflet::addTiles() %>%
+    # leaflet::addProviderTiles("Esri.WorldImagery") %>%
+    leaflet::addCircleMarkers(radius = 2, color = "red", stroke=FALSE, fillOpacity=0.2) %>% 
+    addControl(rr, position = "bottomleft")
+ 
+}
+```
+
+
+##  Getting and Preparing Data
+
+```{r echo=FALSE}
+# 2021 fires data from 2021-02-24 till 2021-05-22
+f_ua_2021_df = utils::read.csv("./data/ua-2021_fire_archive_SV-C2_272178.csv")
+f_ua_2021_filtered_df = clean_data(f_ua_2021_df, 30)
+# summary(f_ua_2021_filtered_df)
+
+# 2022 fires data from 2022-02-24 till 2022-05-22
+f_ua_2022_df = utils::read.csv("./data/ua-2022_fire_nrt_SV-C2_272179.csv")
+f_ua_2022_filtered_df = clean_data(f_ua_2022_df, 15)
+# summary(f_ua_2022_filtered_df)
+```
+
+## Mapping Data
+
+```{r maps, echo=FALSE}
+mf21 = map_fires(f_ua_2021_filtered_df, label="UA Fires 2021")
+mf22 = map_fires(f_ua_2022_filtered_df, label="UA Fires 2022")
+
+# synced
+# sync(mf21, mf22)
+```
+
+<center> <h3>FIres in Ukraine from February 24 till May 22</h3> </center>
+
+```{r echo=FALSE}
+sync(mf21, mf22, no.initial.sync = FALSE)  
+# sync(mf21, mf22, sync="all")  
+```
+
+<p>
+## Bar plots of daily fires data
+
+```{r echo=FALSE}
+f_ua_2021_df$acq_date <- as.Date(f_ua_2021_df$acq_date)
+f_ua_2021_grouped <- aggregate(f_ua_2021_df$frp, by=list(f_ua_2021_df$acq_date), sum)
+# summary(f_ua_2021_grouped)
+
+f_ua_2022_df$acq_date <- as.Date(f_ua_2022_df$acq_date)
+f_ua_2022_grouped <- aggregate(f_ua_2022_df$frp, by=list(f_ua_2022_df$acq_date), sum)
+# summary(f_ua_2022_grouped)
+# head(f_ua_2022_grouped)
+rownames(f_ua_2022_grouped) <- f_ua_2022_grouped$Group.1
+
+f_ua_2021_df$acq_date <- as.Date(f_ua_2021_df$acq_date)
+f_ua_2021_grouped <- aggregate(f_ua_2021_df$frp, by=list(f_ua_2021_df$acq_date), sum)
+rownames(f_ua_2021_grouped) <- f_ua_2021_grouped$Group.1
+
+# summary(f_ua_2022_grouped$x)
+
+plot(f_ua_2022_grouped$Group.1, f_ua_2022_grouped$x, main="Fires", col="red",  lwd = 2, type="l", xaxt = "n")
+lines(f_ua_2022_grouped$Group.1, f_ua_2021_grouped$x, col="blue",  lwd = 2, type="l", xaxt = "n")
+
+# Add dates to x-axis
+axis(1, f_ua_2022_grouped$Group.1, format(f_ua_2022_grouped$Group.1, "%b,%d"))
+```
+
+```{r echo=FALSE}
+## Full year data
+
+library("hydroTSM")
+
+f_ua_2021_year_df = utils::read.csv("./data/fire_archive_SV-C2_272184.csv")
+
+# map_fires(f_ua_2021_year_df)
+
+
+f_ua_2021_year_df$acq_date <- as.Date(f_ua_2021_year_df$acq_date)
+
+seasons <- time2season(f_ua_2021_year_df$acq_date, out.fmt = "seasons")
+
+f_ua_2021_year_df$season <- seasons
+
+f_ua_2021_count_by_season <- aggregate(f_ua_2021_year_df$season, by=list(f_ua_2021_year_df$season), NROW)
+```
+
+
+## Pie chart
+
+```{r}
+# pie(slices,labels = lbls, col=rainbow(length(lbls)),
+#    main="Pie Chart of Countries")
+
+pie(f_ua_2021_count_by_season$x, f_ua_2021_count_by_season$Group.1, main="Fires by Seasons")
+```
+
+## Conclusion
+Completing this work allowed to discover valuable information about environmental data available from satellites. Some initial results of which instruments are available and how to get and use data were a
+Data and code for this work is available on [github](https://github.com/beeduino/wildfires-experiments).
+
+## References
+-   [The Fire Information for Resource Management System](https://firms.modaps.eosdis.nasa.gov/)
+-   [Visualising data in NetCDF format (youtube)](https://www.youtube.com/watch?v=XqoetylQAIY)
+-   [nasa-wildfires](https://github.com/datadesk/nasa-wildfires)
+-   [Mapping 2019–20 Australian bushfires](https://towardsdatascience.com/mapping-2019-20-australian-bushfires-4e6d9a0eed63)
+
+
+
+   
+   
+   
+
+
+
+
