@@ -137,7 +137,7 @@ sync(mf21, mf22, no.initial.sync = FALSE)
 ## Comparing number of fires
 
 The following bar plots demonstrate the number of fires in 2021 and 2022 year for total amount of fires and amount of fires above selected FRP level.
-It is clearly visible that war affect the amount of fires to increase in 2.5 times when amout of fires of high intensity jumps up to 4 times. 
+It is clearly visible that war affects the amount of fires to increase in 2.5 times when amout of fires of high intensity jumps up to 4 times. 
 
 ```{r}
 # Bar plots come here
@@ -150,13 +150,9 @@ barplot(fires_total,
 )
 legend("topleft",
   c("2021","2022"),
-  fill = c("blue","red"), # pch=c(1,2), # lty=c(1,2),
-      inset=c(0.15,0), xpd=TRUE, horiz=FALSE  #, bty="n"        
+  fill = c("blue","red"),
+  inset=c(0.15,0), # xpd=TRUE, horiz=FALSE  #, bty="n"        
 )
-
-#legend("bottomright", c("group A", "group B"), pch=c(1,2), lty=c(1,2),
-#       inset=c(0,1), xpd=TRUE, horiz=TRUE, bty="n"
-#       )
 
 
 fires_big_frp <- c(nrow(f_ua_2021_filtered_df), nrow(f_ua_2022_filtered_df))
@@ -177,6 +173,8 @@ legend("topleft",
 
 ## Daily plots for intensity of fires
 
+The plot below outputs tha daily cumulative value of FRP and could represent the total intensity of fires. The peaks for 2022 data correlate with the dates of increased war clutches. 
+
 ```{r echo=FALSE}
 f_ua_2021_df$acq_date <- as.Date(f_ua_2021_df$acq_date)
 f_ua_2021_grouped <- aggregate(f_ua_2021_df$frp, by=list(f_ua_2021_df$acq_date), sum)
@@ -184,9 +182,9 @@ f_ua_2021_grouped <- aggregate(f_ua_2021_df$frp, by=list(f_ua_2021_df$acq_date),
 
 f_ua_2022_df$acq_date <- as.Date(f_ua_2022_df$acq_date)
 f_ua_2022_grouped <- aggregate(f_ua_2022_df$frp, by=list(f_ua_2022_df$acq_date), sum)
+rownames(f_ua_2022_grouped) <- f_ua_2022_grouped$Group.1
 # summary(f_ua_2022_grouped)
 # head(f_ua_2022_grouped)
-rownames(f_ua_2022_grouped) <- f_ua_2022_grouped$Group.1
 
 f_ua_2021_df$acq_date <- as.Date(f_ua_2021_df$acq_date)
 f_ua_2021_grouped <- aggregate(f_ua_2021_df$frp, by=list(f_ua_2021_df$acq_date), sum)
@@ -194,14 +192,26 @@ rownames(f_ua_2021_grouped) <- f_ua_2021_grouped$Group.1
 
 # summary(f_ua_2022_grouped$x)
 
-plot(f_ua_2022_grouped$Group.1, f_ua_2022_grouped$x, main="Fires", col="red",  lwd = 2, type="l", xaxt = "n")
+plot(f_ua_2022_grouped$Group.1, f_ua_2022_grouped$x, main="Intensity of Fires Feb,24 - May, 22, 2022",
+     col="red",  lwd = 2, type="l", xaxt = "n",
+     xlab="")
 lines(f_ua_2022_grouped$Group.1, f_ua_2021_grouped$x, col="blue",  lwd = 2, type="l", xaxt = "n")
 
 # Add dates to x-axis
 axis(1, f_ua_2022_grouped$Group.1, format(f_ua_2022_grouped$Group.1, "%b,%d"))
 ```
 
-```{r echo=FALSE}
+## Fraction of fires by season
+
+The full 2021 "peaceful" year fires data aggregated by seasons shows that:
+
+- about 50% of fires comes at summer time 
+- very low amount of fires at winter
+- spring and autumn fill the rest where autumn has more fires relatively to spring
+
+I wish the war ends before I can draw similar pie chart for full year 2022 fire data. 
+
+```{r}
 ## Full year data
 
 library("hydroTSM")
@@ -213,26 +223,28 @@ f_ua_2021_year_df = utils::read.csv("./data/fire_archive_SV-C2_272184.csv")
 
 f_ua_2021_year_df$acq_date <- as.Date(f_ua_2021_year_df$acq_date)
 
+# add season's label in "season" column 
 seasons <- time2season(f_ua_2021_year_df$acq_date, out.fmt = "seasons")
-
 f_ua_2021_year_df$season <- seasons
 
 f_ua_2021_count_by_season <- aggregate(f_ua_2021_year_df$season, by=list(f_ua_2021_year_df$season), NROW)
-```
 
 
-## Fraction of fires by season
-
-```{r}
 # pie(slices,labels = lbls, col=rainbow(length(lbls)),
 #    main="Pie Chart of Countries")
 
-pie(f_ua_2021_count_by_season$x, f_ua_2021_count_by_season$Group.1, main="Fires by Seasons")
+pie(f_ua_2021_count_by_season$x, f_ua_2021_count_by_season$Group.1, main="Fraction of Fires by Seasons")
 ```
 
 ## Conclusion
-Completing this work allowed to discover valuable information about environmental data available from satellites. Some initial results of which instruments are available and how to get and use data were a
-Data and code for this work is available on [github](https://github.com/beeduino/wildfires-experiments).
+Completing this work allowed to discover valuable information about environmental data available from satellites.
+FIRMS fire data and other instruments could be very useful for analysing not only environmental data by itself but 
+estimate and measure the severity of humanitarian disasters.
+
+
+Data and code for this work is available on [github](https://github.com/beeduino/wildfires-experiments/tree/main/fires_ua)
+
+
 
 ## References
 1.  [The Fire Information for Resource Management System](https://firms.modaps.eosdis.nasa.gov/)
