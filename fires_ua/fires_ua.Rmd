@@ -18,17 +18,6 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 The idea for this report was to use active fire data to observe war zones in Ukraine in range from February, 24 to May, 22 in 2022. Data in csv format was requested from **FIRMS** - The Fire Information for Resource Management System. Few files were requested for the same time frame but different years - the current one and the previous "peaceful" year.
 
-
-Further, filter_data() function will be used to subset data related to Russia only (latitude above 49.0). As a result only around 1200 fire points mapped out of 6703 in a full daily archive.
-
-### Use historical data
-
-Request to get archive with annual data was manually placed via the page <https://firms.modaps.eosdis.nasa.gov/download/create.php>
-
-It took around an hour to proceed with download the file "fire_nrt_SV-C2_224794.csv" .
-
-This archive has 1.600.000 observation points in a date range from 2021-05-01 to 2021-09-30. Plotting map from this dataset makes R-Studio to crash. It was tested on two different machines with the same r
-
 ```{r libraries, include=FALSE}
 
 ## Prerequisities
@@ -93,6 +82,24 @@ map_fires <- function(df, label="") {
 
 
 ##  Getting and Preparing Data
+
+Request to get archive with annual data was manually placed via the page <https://firms.modaps.eosdis.nasa.gov/download/create.php>
+Following files were obtained:
+
+1. fire_archive_SV-C2_272178.csv - fire data for the date range "2021-02-24-2021-05-22" in Ukraine
+2. fire_nrt_SV-C2_272179.csv - - fire data for the date range "2022-02-24-2022-05-22" in Ukraine
+3. fire_archive_SV-C2_272184.csv - fire data for the whole year "2021-01-01-2021-12-31" in Ukraine
+
+It took around an hour to proceed with download the file "fire_nrt_SV-C2_224794.csv" .
+
+Further, filter_data() function will be used to subset data with FRP level above the given value. 
+Fire Radiative Power (**FRP**) measures the energy emitted through radiative processes released during the combustion and can be associated with fire intensity all throughout the fire burning process ^4^.
+
+As a result only around 1200 fire points mapped out of 6703 in a full daily archive.
+
+This archive has 1.600.000 observation points in a date range from 2021-05-01 to 2021-09-30. Plotting map from this dataset makes R-Studio to crash. It was tested on two different machines with the same r
+
+
 
 ```{r echo=FALSE}
 # 2021 fires data from 2021-02-24 till 2021-05-22
@@ -184,10 +191,11 @@ Completing this work allowed to discover valuable information about environmenta
 Data and code for this work is available on [github](https://github.com/beeduino/wildfires-experiments).
 
 ## References
--   [The Fire Information for Resource Management System](https://firms.modaps.eosdis.nasa.gov/)
--   [Visualising data in NetCDF format (youtube)](https://www.youtube.com/watch?v=XqoetylQAIY)
--   [nasa-wildfires](https://github.com/datadesk/nasa-wildfires)
--   [Mapping 2019–20 Australian bushfires](https://towardsdatascience.com/mapping-2019-20-australian-bushfires-4e6d9a0eed63)
+1.  [The Fire Information for Resource Management System](https://firms.modaps.eosdis.nasa.gov/)
+2.  [Visualising data in NetCDF format (youtube)](https://www.youtube.com/watch?v=XqoetylQAIY)
+3.  [nasa-wildfires](https://github.com/datadesk/nasa-wildfires)
+4.  [Varying relationships between fire radiative power and fire size at a global scale](https://bg.copernicus.org/articles/16/275/2019/)
+5.  [Mapping 2019–20 Australian bushfires](https://towardsdatascience.com/mapping-2019-20-australian-bushfires-4e6d9a0eed63)
 
 
 
