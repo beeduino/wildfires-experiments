@@ -90,15 +90,10 @@ Following files were obtained:
 2. fire_nrt_SV-C2_272179.csv - - fire data for the date range "2022-02-24-2022-05-22" in Ukraine
 3. fire_archive_SV-C2_272184.csv - fire data for the whole year "2021-01-01-2021-12-31" in Ukraine
 
-It took around an hour to proceed with download the file "fire_nrt_SV-C2_224794.csv" .
+Further, filter_data() function was used to subset data with FRP level above the given value (the value of 17 MegaWatts was used in this report).
 
-Further, filter_data() function will be used to subset data with FRP level above the given value. 
+
 Fire Radiative Power (**FRP**) measures the energy emitted through radiative processes released during the combustion and can be associated with fire intensity all throughout the fire burning process ^4^.
-
-As a result only around 1200 fire points mapped out of 6703 in a full daily archive.
-
-This archive has 1.600.000 observation points in a date range from 2021-05-01 to 2021-09-30. Plotting map from this dataset makes R-Studio to crash. It was tested on two different machines with the same r
-
 
 
 ```{r echo=FALSE}
@@ -115,6 +110,8 @@ f_ua_2022_filtered_df = filter_data(f_ua_2022_df, 17)
 
 ## Mapping Data
 
+Mapping data for two consequent years allows to see the increases in fires sensed remotely. It visually defines the areas of active war actions.
+
 ```{r maps, echo=FALSE}
 mf21 = map_fires(f_ua_2021_filtered_df, label="UA Fires 2021")
 mf22 = map_fires(f_ua_2022_filtered_df, label="UA Fires 2022")
@@ -123,15 +120,25 @@ mf22 = map_fires(f_ua_2022_filtered_df, label="UA Fires 2022")
 # sync(mf21, mf22)
 ```
 
-<center> <h3>FIres in Ukraine from February 24 till May 22</h3> </center>
+<center> <h3><b>Fires in Ukraine from February 24 till May 22</b></h3> </center>
 
 ```{r echo=FALSE}
 sync(mf21, mf22, no.initial.sync = FALSE)  
 # sync(mf21, mf22, sync="all")  
 ```
 
-<p>
-## Bar plots of daily fires data
+
+## Comparing number of fires
+
+The following bar plots demonstrate the number of fires in 2021 and 2022 year for total amount of fires and amount of fires above selected FRP level.
+
+```{r}
+# Bar plots come here
+
+
+```
+
+## Daily plots for intensity of fires
 
 ```{r echo=FALSE}
 f_ua_2021_df$acq_date <- as.Date(f_ua_2021_df$acq_date)
