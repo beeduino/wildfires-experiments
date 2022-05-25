@@ -147,10 +147,15 @@ barplot(fires_total,
   xlab = "Years",
   col = c("blue","red")
 )
-legend("topright",
+legend("topleft",
   c("2021","2022"),
-  fill = c("blue","red")        
+  fill = c("blue","red"), # pch=c(1,2), # lty=c(1,2),
+      inset=c(0.15,0), xpd=TRUE, horiz=FALSE  #, bty="n"        
 )
+
+#legend("bottomright", c("group A", "group B"), pch=c(1,2), lty=c(1,2),
+#       inset=c(0,1), xpd=TRUE, horiz=TRUE, bty="n"
+#       )
 
 
 fires_big_frp <- c(nrow(f_ua_2021_filtered_df), nrow(f_ua_2022_filtered_df))
@@ -160,9 +165,10 @@ barplot(fires_big_frp,
   xlab = "Years",
   col = c("blue","red")
 )
-legend("topright",
+legend("topleft",
   c("2021","2022"),
-  fill = c("blue","red")        
+  fill = c("blue","red"),
+  inset=c(0.15,0)
 )
 
 
@@ -214,7 +220,7 @@ f_ua_2021_count_by_season <- aggregate(f_ua_2021_year_df$season, by=list(f_ua_20
 ```
 
 
-## Pie chart
+## Fraction of fires by season
 
 ```{r}
 # pie(slices,labels = lbls, col=rainbow(length(lbls)),
