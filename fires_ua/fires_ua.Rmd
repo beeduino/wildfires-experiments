@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 ## Description
 
-The idea for this report was to use active fire data to observe war zones in Ukraine in range from February, 24 to May, 22 in 2022. Data in csv format was requested from **FIRMS** - The Fire Information for Resource Management System ^1^. 
+The idea for this report was to use active fire data to observe war zones in Ukraine in date range from February, 24 to May, 22 in 2022. Data in csv format was requested from **FIRMS** - The Fire Information for Resource Management System ^1^. 
 
 
 Few files were requested for the same time frame but different years - the current one and the previous "peaceful" year.
