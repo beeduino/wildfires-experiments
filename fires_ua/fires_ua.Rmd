@@ -103,14 +103,14 @@ Fire Radiative Power (**FRP**) measures the energy emitted through radiative pro
 
 ```{r echo=FALSE}
 # 2021 fires data from 2021-02-24 till 2021-05-22
-f_ua_2021_df = utils::read.csv("./data/fire_archive_SV-C2_272178.csv")
-f_ua_2021_filtered_df = filter_data(f_ua_2021_df, 17)
-# summary(f_ua_2021_filtered_df)
+fires_ua_2021_df = utils::read.csv("./data/fire_archive_SV-C2_272178.csv")
+fires_ua_2021_filtered_df = filter_data(fires_ua_2021_df, 17)
+# summary(fires_ua_2021_filtered_df)
 
 # 2022 fires data from 2022-02-24 till 2022-05-22
-f_ua_2022_df = utils::read.csv("./data/fire_nrt_SV-C2_272179.csv")
-f_ua_2022_filtered_df = filter_data(f_ua_2022_df, 17)
-# summary(f_ua_2022_filtered_df)
+fires_ua_2022_df = utils::read.csv("./data/fire_nrt_SV-C2_272179.csv")
+fires_ua_2022_filtered_df = filter_data(fires_ua_2022_df, 17)
+# summary(fires_ua_2022_filtered_df)
 ```
 
 ## Mapping Data
@@ -118,8 +118,8 @@ f_ua_2022_filtered_df = filter_data(f_ua_2022_df, 17)
 Mapping data for two consequent years allows to see the increases in fires sensed remotely. It visually defines the areas of active war actions.
 
 ```{r maps, echo=FALSE}
-mf21 = map_fires(f_ua_2021_filtered_df, label="UA Fires 2021")
-mf22 = map_fires(f_ua_2022_filtered_df, label="UA Fires 2022")
+mf21 = map_fires(fires_ua_2021_filtered_df, label="UA Fires 2021")
+mf22 = map_fires(fires_ua_2022_filtered_df, label="UA Fires 2022")
 
 # synced
 # sync(mf21, mf22)
@@ -141,7 +141,7 @@ It is clearly visible that war affects the amount of fires to increase in 2.5 ti
 
 ```{r}
 # Bar plots come here
-fires_total <- c(nrow(f_ua_2021_df), nrow(f_ua_2022_df))
+fires_total <- c(nrow(fires_ua_2021_df), nrow(fires_ua_2022_df))
 
 barplot(fires_total,
   main = "Total amount of fires",
@@ -155,7 +155,7 @@ legend("topleft",
 )
 
 
-fires_big_frp <- c(nrow(f_ua_2021_filtered_df), nrow(f_ua_2022_filtered_df))
+fires_big_frp <- c(nrow(fires_ua_2021_filtered_df), nrow(fires_ua_2022_filtered_df))
 
 barplot(fires_big_frp,
   main = "Total amount of fires of high intensity (FRP above 17MW)",
@@ -176,32 +176,32 @@ legend("topleft",
 The plot below outputs tha daily cumulative value of FRP and could represent the total intensity of fires. The peaks for 2022 data correlate with the dates of increased war clutches. 
 
 ```{r echo=FALSE}
-f_ua_2021_df$acq_date <- as.Date(f_ua_2021_df$acq_date)
-f_ua_2021_grouped <- aggregate(f_ua_2021_df$frp, by=list(f_ua_2021_df$acq_date), sum)
-# summary(f_ua_2021_grouped)
+fires_ua_2021_df$acq_date <- as.Date(fires_ua_2021_df$acq_date)
+fires_ua_2021_grouped <- aggregate(fires_ua_2021_df$frp, by=list(fires_ua_2021_df$acq_date), sum)
+# summary(fires_ua_2021_grouped)
 
-f_ua_2022_df$acq_date <- as.Date(f_ua_2022_df$acq_date)
-f_ua_2022_grouped <- aggregate(f_ua_2022_df$frp, by=list(f_ua_2022_df$acq_date), sum)
-rownames(f_ua_2022_grouped) <- f_ua_2022_grouped$Group.1
-# summary(f_ua_2022_grouped)
-# head(f_ua_2022_grouped)
+fires_ua_2022_df$acq_date <- as.Date(fires_ua_2022_df$acq_date)
+fires_ua_2022_grouped <- aggregate(fires_ua_2022_df$frp, by=list(fires_ua_2022_df$acq_date), sum)
+rownames(fires_ua_2022_grouped) <- fires_ua_2022_grouped$Group.1
+# summary(fires_ua_2022_grouped)
+# head(fires_ua_2022_grouped)
 
-f_ua_2021_df$acq_date <- as.Date(f_ua_2021_df$acq_date)
-f_ua_2021_grouped <- aggregate(f_ua_2021_df$frp, by=list(f_ua_2021_df$acq_date), sum)
-rownames(f_ua_2021_grouped) <- f_ua_2021_grouped$Group.1
-# summary(f_ua_2022_grouped$x)
+fires_ua_2021_df$acq_date <- as.Date(fires_ua_2021_df$acq_date)
+fires_ua_2021_grouped <- aggregate(fires_ua_2021_df$frp, by=list(fires_ua_2021_df$acq_date), sum)
+rownames(fires_ua_2021_grouped) <- fires_ua_2021_grouped$Group.1
+# summary(fires_ua_2022_grouped$x)
 
-plot(f_ua_2022_grouped$Group.1, f_ua_2022_grouped$x, main="Intensity of Fires Feb,24 - May, 22",
+plot(fires_ua_2022_grouped$Group.1, fires_ua_2022_grouped$x, main="Intensity of Fires Feb,24 - May, 22",
      col="red",  lwd = 2, type="l", xaxt = "n",
      xlab="",
      ylab="cumulative FRP fire power, (MW)"
 )
-lines(f_ua_2022_grouped$Group.1, f_ua_2021_grouped$x, col="blue",  lwd = 2, type="l",
+lines(fires_ua_2022_grouped$Group.1, fires_ua_2021_grouped$x, col="blue",  lwd = 2, type="l",
       xaxt = "n",
 )
 
 # Add dates to x-axis
-axis(1, f_ua_2022_grouped$Group.1, format(f_ua_2022_grouped$Group.1, "%b,%d"))
+axis(1, fires_ua_2022_grouped$Group.1, format(fires_ua_2022_grouped$Group.1, "%b,%d"))
 
 legend("topright",
   c("2021","2022"),
@@ -226,24 +226,18 @@ I wish the war ends before I can draw similar pie chart for full year 2022 fire 
 
 library("hydroTSM")
 
-f_ua_2021_year_df = utils::read.csv("./data/fire_archive_SV-C2_272184.csv")
+fires_ua_2021_year_df = utils::read.csv("./data/fire_archive_SV-C2_272184.csv")
+# map_fires(fires_ua_2021_year_df)
 
-# map_fires(f_ua_2021_year_df)
-
-
-f_ua_2021_year_df$acq_date <- as.Date(f_ua_2021_year_df$acq_date)
+fires_ua_2021_year_df$acq_date <- as.Date(fires_ua_2021_year_df$acq_date)
 
 # add season's label in "season" column 
-seasons <- time2season(f_ua_2021_year_df$acq_date, out.fmt = "seasons")
-f_ua_2021_year_df$season <- seasons
+seasons <- time2season(fires_ua_2021_year_df$acq_date, out.fmt = "seasons")
+fires_ua_2021_year_df$season <- seasons
 
-f_ua_2021_count_by_season <- aggregate(f_ua_2021_year_df$season, by=list(f_ua_2021_year_df$season), NROW)
+fires_ua_2021_count_by_season <- aggregate(fires_ua_2021_year_df$season, by=list(fires_ua_2021_year_df$season), NROW)
 
-
-# pie(slices,labels = lbls, col=rainbow(length(lbls)),
-#    main="Pie Chart of Countries")
-
-pie(f_ua_2021_count_by_season$x, f_ua_2021_count_by_season$Group.1, main="Fraction of Fires by Seasons")
+pie(fires_ua_2021_count_by_season$x, fires_ua_2021_count_by_season$Group.1, main="Fraction of Fires by Seasons")
 ```
 
 ## Conclusion
