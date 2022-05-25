@@ -16,7 +16,10 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 ## Description
 
-The idea for this report was to use active fire data to observe war zones in Ukraine in range from February, 24 to May, 22 in 2022. Data in csv format was requested from **FIRMS** - The Fire Information for Resource Management System. Few files were requested for the same time frame but different years - the current one and the previous "peaceful" year.
+The idea for this report was to use active fire data to observe war zones in Ukraine in range from February, 24 to May, 22 in 2022. Data in csv format was requested from **FIRMS** - The Fire Information for Resource Management System ^1^. 
+
+
+Few files were requested for the same time frame but different years - the current one and the previous "peaceful" year.
 
 ```{r libraries, include=FALSE}
 
@@ -84,11 +87,13 @@ map_fires <- function(df, label="") {
 ##  Getting and Preparing Data
 
 Request to get archive with annual data was manually placed via the page <https://firms.modaps.eosdis.nasa.gov/download/create.php>
-Following files were obtained:
 
-1. fire_archive_SV-C2_272178.csv - fire data for the date range "2021-02-24-2021-05-22" in Ukraine
-2. fire_nrt_SV-C2_272179.csv - - fire data for the date range "2022-02-24-2022-05-22" in Ukraine
-3. fire_archive_SV-C2_272184.csv - fire data for the whole year "2021-01-01-2021-12-31" in Ukraine
+
+The following archives were obtained:
+
+1. **fire_archive_SV-C2_272178.csv** - fire data for the date range "2021-02-24-2021-05-22" in Ukraine
+2. **fire_nrt_SV-C2_272179.csv** - - fire data for the date range "2022-02-24-2022-05-22" in Ukraine
+3. **fire_archive_SV-C2_272184.csv** - fire data for the whole year "2021-01-01-2021-12-31" in Ukraine
 
 Further, filter_data() function was used to subset data with FRP level above the given value (the value of 17 MegaWatts was used in this report).
 
@@ -98,12 +103,12 @@ Fire Radiative Power (**FRP**) measures the energy emitted through radiative pro
 
 ```{r echo=FALSE}
 # 2021 fires data from 2021-02-24 till 2021-05-22
-f_ua_2021_df = utils::read.csv("./data/ua-2021_fire_archive_SV-C2_272178.csv")
+f_ua_2021_df = utils::read.csv("./data/fire_archive_SV-C2_272178.csv")
 f_ua_2021_filtered_df = filter_data(f_ua_2021_df, 17)
 # summary(f_ua_2021_filtered_df)
 
 # 2022 fires data from 2022-02-24 till 2022-05-22
-f_ua_2022_df = utils::read.csv("./data/ua-2022_fire_nrt_SV-C2_272179.csv")
+f_ua_2022_df = utils::read.csv("./data/fire_nrt_SV-C2_272179.csv")
 f_ua_2022_filtered_df = filter_data(f_ua_2022_df, 17)
 # summary(f_ua_2022_filtered_df)
 ```
@@ -126,7 +131,8 @@ mf22 = map_fires(f_ua_2022_filtered_df, label="UA Fires 2022")
 sync(mf21, mf22, no.initial.sync = FALSE)  
 # sync(mf21, mf22, sync="all")  
 ```
-
+<br>
+<br>
 
 ## Comparing number of fires
 
@@ -134,6 +140,30 @@ The following bar plots demonstrate the number of fires in 2021 and 2022 year fo
 
 ```{r}
 # Bar plots come here
+fires_total <- c(nrow(f_ua_2021_df), nrow(f_ua_2022_df))
+
+barplot(fires_total,
+  main = "Total amount of fires",
+  xlab = "Years",
+  col = c("blue","red")
+)
+legend("topright",
+  c("2021","2022"),
+  fill = c("blue","red")        
+)
+
+
+fires_big_frp <- c(nrow(f_ua_2021_filtered_df), nrow(f_ua_2022_filtered_df))
+
+barplot(fires_big_frp,
+  main = "Total amount of fires of high intensity (FRP above 17MW)",
+  xlab = "Years",
+  col = c("blue","red")
+)
+legend("topright",
+  c("2021","2022"),
+  fill = c("blue","red")        
+)
 
 
 ```
