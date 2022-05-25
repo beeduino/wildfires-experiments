@@ -125,7 +125,7 @@ mf22 = map_fires(f_ua_2022_filtered_df, label="UA Fires 2022")
 # sync(mf21, mf22)
 ```
 
-<center> <h3><b>Fires in Ukraine from February 24 till May 22</b></h3> </center>
+<center> <h3>Fires in Ukraine from February 24 till May 22</h3> </center>
 
 ```{r echo=FALSE}
 sync(mf21, mf22, no.initial.sync = FALSE)  
@@ -189,16 +189,26 @@ rownames(f_ua_2022_grouped) <- f_ua_2022_grouped$Group.1
 f_ua_2021_df$acq_date <- as.Date(f_ua_2021_df$acq_date)
 f_ua_2021_grouped <- aggregate(f_ua_2021_df$frp, by=list(f_ua_2021_df$acq_date), sum)
 rownames(f_ua_2021_grouped) <- f_ua_2021_grouped$Group.1
-
 # summary(f_ua_2022_grouped$x)
 
-plot(f_ua_2022_grouped$Group.1, f_ua_2022_grouped$x, main="Intensity of Fires Feb,24 - May, 22, 2022",
+plot(f_ua_2022_grouped$Group.1, f_ua_2022_grouped$x, main="Intensity of Fires Feb,24 - May, 22",
      col="red",  lwd = 2, type="l", xaxt = "n",
-     xlab="")
-lines(f_ua_2022_grouped$Group.1, f_ua_2021_grouped$x, col="blue",  lwd = 2, type="l", xaxt = "n")
+     xlab="",
+     ylab="cumulative FRP fire power, (MW)"
+)
+lines(f_ua_2022_grouped$Group.1, f_ua_2021_grouped$x, col="blue",  lwd = 2, type="l",
+      xaxt = "n",
+)
 
 # Add dates to x-axis
 axis(1, f_ua_2022_grouped$Group.1, format(f_ua_2022_grouped$Group.1, "%b,%d"))
+
+legend("topright",
+  c("2021","2022"),
+  fill = c("blue","red"),
+  inset=c(0.15,0.15)
+)
+
 ```
 
 ## Fraction of fires by season
